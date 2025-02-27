@@ -1,4 +1,5 @@
 # Place your EWU ID and Name here. 
+# EWU ID: whiland - name: Reed Hiland
 
 ### Delete every `pass` statement below and add in your own code. 
 
@@ -37,8 +38,14 @@ class NeuralNetwork:
             - 'iden': the identity function
             - 'relu': the ReLU function
         '''
-        
-        pass
+        if self.L == -1:
+            self.layers.append([{'d': d, 'act': None}])
+        else:
+            self.layers.append([{'d': d, 'act': act}])
+
+        self.L += 1
+
+        # pass
     
 
     def _init_weights(self):

@@ -1,4 +1,5 @@
 # Place your EWU ID and name here
+# EWU ID: whiland - name: Reed Hiland
 
 ## delete the `pass` statement in every function below and add in your own code. 
 
