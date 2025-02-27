@@ -21,7 +21,7 @@ class MyMath:
             x: an array type of real numbers
             return: the numpy array where every element is tanh of the corresponding element in array x
         '''
-        pass
+        return np.tanh(x)
 
     
     def tanh_de(x):
@@ -33,11 +33,10 @@ class MyMath:
         '''
 
         # tanh'(x) = 1.0 - (tanh(x))^2.0
-
-        
-        pass
+        return 1.0 - np.power(np.tanh(x), 2.0)
 
     
+
     def logis(x):
         ''' Logistic function. 
             Support vectorized operation
@@ -48,8 +47,8 @@ class MyMath:
         '''
 
         # You can compute logis via tanh as: logix(x) = (tanh(x/2.0) + 1.0) / 2.0
-        
-        pass
+        return (np.tanh(x/2.0) + 1.0) / 2.0
+
 
     
     def logis_de(x):
@@ -61,8 +60,11 @@ class MyMath:
                     the corresponding element in array x
         '''
         #logis'(x) = logis(x) * (1.0-logis(x)). 
-        
-        pass
+
+        #If the last project doesnt get docked points for coding outside the methods to make things @staticmethod, I will do it here
+        workaround = MyMath() # create an instance of the class to call the logis function since this is the only area where im allowed to code
+        return workaround.logis(x) * (1.0 - workaround.logis(x))
+
 
     
     def iden(x):
@@ -73,7 +75,7 @@ class MyMath:
             return: the numpy array where every element is the same as
                     the corresponding element in array x
         '''
-        pass
+        return np.copy(x)
 
     
     def iden_de(x):
@@ -83,7 +85,7 @@ class MyMath:
             x: an array type of real numbers
             return: the numpy array of all ones of the same shape of x.
         '''
-        pass
+        return np.ones(x.shape)
         
 
     def relu(x):
@@ -93,7 +95,7 @@ class MyMath:
             x: an array type of real numbers
             return: the numpy array of the same shape of x, where every element is the max of: zero vs. the corresponding element in x.
         '''
-        pass
+        return np.maximum(0, x)
 
     
     def relu_de(x):
@@ -103,6 +105,6 @@ class MyMath:
             x: an array type of real numbers
             return: the numpy array of the same shape of x, where every element is 1 if the correponding x element is positive; 0, otherwise. 
         '''
-        pass
+        return np.where(x > 0, 1, 0)
 
     
