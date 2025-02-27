@@ -39,9 +39,9 @@ class NeuralNetwork:
             - 'relu': the ReLU function
         '''
         if self.L == -1:
-            self.layers.append([{'d': d, 'act': None}])
+            self.layers.append(nn_layer.NeuralLayer(d, 'None'))
         else:
-            self.layers.append([{'d': d, 'act': act}])
+            self.layers.append(nn_layer.NeuralLayer(d, act))
 
         self.L += 1
 
@@ -52,7 +52,16 @@ class NeuralNetwork:
         ''' Initialize every layer's edge weights with random numbers from [-1/sqrt(d),1/sqrt(d)], 
             where d is the number of nonbias node of the layer
         '''
-        pass
+
+        for l in range(1, len(self.layers)):
+            prev_layer = self.layers[l-1]
+            current_layer = self.layers[l]
+
+            n = prev_layer.d  
+            limit = 1.0 / math.sqrt(n)
+
+            current_layer.W = np.random.uniform(-limit, limit, size=(n + 1, current_layer.d)) 
+        # pass
     
     
         
