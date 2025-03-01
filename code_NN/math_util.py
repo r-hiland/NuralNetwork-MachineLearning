@@ -34,7 +34,7 @@ class MyMath:
         '''
 
         # tanh'(x) = 1.0 - (tanh(x))^2.0
-        return 1.0 - np.power(np.tanh(x), 2.0)
+        return 1.0 - np.tanh(x)**2
 
     
 
@@ -61,10 +61,7 @@ class MyMath:
                     the corresponding element in array x
         '''
         #logis'(x) = logis(x) * (1.0-logis(x)). 
-
-        #If the last project doesnt get docked points for coding outside the methods to make things @staticmethod, I will do it here
-        workaround = MyMath() # create an instance of the class to call the logis function since this is the only area where im allowed to code
-        return workaround.logis(x) * (1.0 - workaround.logis(x))
+        return MyMath.logis(x) * (1.0 - MyMath.logis(x))
 
 
     
@@ -76,7 +73,7 @@ class MyMath:
             return: the numpy array where every element is the same as
                     the corresponding element in array x
         '''
-        return np.copy(x)
+        return x
 
     
     def iden_de(x):
@@ -86,7 +83,7 @@ class MyMath:
             x: an array type of real numbers
             return: the numpy array of all ones of the same shape of x.
         '''
-        return np.ones(x.shape)
+        return np.ones_like(x)
         
 
     def relu(x):
@@ -106,6 +103,6 @@ class MyMath:
             x: an array type of real numbers
             return: the numpy array of the same shape of x, where every element is 1 if the correponding x element is positive; 0, otherwise. 
         '''
-        return np.where(x > 0, 1, 0)
+        return (x > 0).astype(float)
 
     

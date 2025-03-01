@@ -39,7 +39,7 @@ class NeuralNetwork:
             - 'relu': the ReLU function
         '''
         if self.L == -1:
-            self.layers.append(nn_layer.NeuralLayer(d, 'None'))
+            self.layers.append(nn_layer.NeuralLayer(d, 'iden')) # adding iden() since first layer doesn't use an act
         else:
             self.layers.append(nn_layer.NeuralLayer(d, act))
 
@@ -53,14 +53,18 @@ class NeuralNetwork:
             where d is the number of nonbias node of the layer
         '''
 
-        for l in range(1, len(self.layers)):
-            prev_layer = self.layers[l-1]
-            current_layer = self.layers[l]
+        # Needs to be a matrix where every column is the wights, and every row is a node from the
+        # previous layer.
 
-            n = prev_layer.d  
-            limit = 1.0 / math.sqrt(n)
+        # Make matrix that size, then fill with random numbers limited be the sqrt above.
 
-            current_layer.W = np.random.uniform(-limit, limit, size=(n + 1, current_layer.d)) 
+        # Need to skip the input layer, so start at 1
+
+        for i in range(1, self.L): # this will go from 1 to L
+            d_current = self.layers[i].d
+            d_prev = self.layers[i-1].d
+            
+            self.layers[i].W = np.random.uniform(-(1.0 / np.sqrt(d_current)), (1.0 / np.sqrt(d_current)), size=(d_prev + 1, d_current))
         # pass
     
     
