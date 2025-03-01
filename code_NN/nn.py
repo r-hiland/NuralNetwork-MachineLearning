@@ -12,8 +12,8 @@
 
 import numpy as np
 import math
-from . import math_util as mu
-from . import nn_layer
+import math_util as mu
+import nn_layer
 
 
 class NeuralNetwork:
