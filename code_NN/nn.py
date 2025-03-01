@@ -60,12 +60,12 @@ class NeuralNetwork:
 
         # Need to skip the input layer, so start at 1
 
-        for i in range(1, self.L): # this will go from 1 to L
+        for i in range(1, self.L+1):
             d_current = self.layers[i].d
-            d_prev = self.layers[i-1].d
-            
-            self.layers[i].W = np.random.uniform(-(1.0 / np.sqrt(d_current)), (1.0 / np.sqrt(d_current)), size=(d_prev + 1, d_current))
-        # pass
+            d_prev = self.layers[i-1].d  # number of non-bias nodes in previous layer
+            limit = 1.0 / np.sqrt(d_current)
+            # Weight matrix shape: (previous layer's nonbias nodes + bias, current layer's nonbias nodes)
+            self.layers[i].W = np.random.uniform(-limit, limit, size=(d_prev + 1, d_current))
     
     
         
@@ -94,7 +94,27 @@ class NeuralNetwork:
         ######### back propagation to calculate the gradients of all the weights
         ######### use the gradients to update all the weight matrices. 
 
-        pass
+        for t in range(iterations):
+
+            # D' = (X, Y) be N' samples randomly picked from D which is the training set
+            d_prime = np.random.choice(X.shape[0], mini_batch_size, replace=False)
+            X = X[d_prime]
+            Y = Y[d_prime]
+
+            #add the bias feature column to the X matrix that has been randomly selected
+            X_bias = np.ones((X.shape[0], 1))
+            X_tmp = np.hstack((X_bias,X))
+
+            for l in range (1, mini_batch_size):
+                d_prime[l].S = np.dot(X_tmp[l-1], d_prime[l].W)
+                d_prime[l].X = np.hstack((X_tmp, d_prime[l].act(d_prime[l].S)))
+            
+            # E
+            e = np.sum((X_tmp[:,1:] - Y)**2) / mini_batch_size
+
+            # Delta (L) = 2(X_tmp[:,1:] - Y) * act_de(s^(L))
+            delta_L = 2 * (X_tmp[:,1:] - Y) * d_prime[-1].act_de(d_prime[-1].S)
+        # pass
     
     
     
@@ -109,7 +129,20 @@ class NeuralNetwork:
             lecture slides.
          '''
 
-        pass
+        X_bias = np.ones((X.shape[0], 1))
+        X_tmp = np.hstack((X_bias,X))
+        self.layers[0].X = X_tmp
+
+        for l in range(1, self.L+1):
+            current_layer = self.layers[l]
+            prev_layer = self.layers[l-1]
+
+            # S(l) = X(l-1) dot W(l)
+            current_layer.S = np.dot(prev_layer.X, current_layer.W)
+            # X(l) = [1 act(S(l))]
+            current_layer.X = np.concatenate((np.ones((current_layer.act(current_layer.S).shape[0], 1)), current_layer.act(current_layer.S)), axis=1)
+
+        return np.argmax(self.layers[-1].X[:, 1:], axis=1)
     
     
     def error(self, X, Y):
@@ -124,5 +157,7 @@ class NeuralNetwork:
             return: the percentage of misclassfied samples
         '''
         
-        pass
+        estimated = self.predict(X)
+        actual = np.argmax(Y, axis=1)
+        return np.sum(estimated != actual) / X.shape[0] * 100
  
