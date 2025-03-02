@@ -10,6 +10,8 @@
 
 
 
+from re import L
+from injector import T
 import numpy as np
 import math
 import math_util as mu
@@ -71,49 +73,77 @@ class NeuralNetwork:
         
     def fit(self, X, Y, eta = 0.01, iterations = 1000, SGD = True, mini_batch_size = 1):
         ''' Find the fitting weight matrices for every hidden layer and the output layer. Save them in the layers.
-          
+        
             X: n x d matrix of samples, where d >= 1 is the number of features in each training sample
-            Y: n x k vector of lables, where k >= 1 is the number of classes in the multi-class classification
+            Y: n x k vector of labels, where k >= 1 is the number of classes in the multi-class classification
             eta: the learning rate used in gradient descent
             iterations: the maximum iterations used in gradient descent
             SGD: True - use SGD; False: use batch GD
-            mini_batch_size: the size of each mini batch size, if SGD is True.  
+            mini_batch_size: the size of each mini batch, if SGD is True.  
         '''
         self._init_weights()  # initialize the edge weights matrices with random numbers.
-
         
-        
-        # I will leave you to decide how you want to organize the rest of the code, but below is what I used and recommend. Decompose them into private components/functions. 
-
-        ## prep the data: add bias column; randomly shuffle data training set. 
-
-        ## for every iteration:
-        #### get a minibatch and use it for:
-        ######### forward feeding
-        ######### calculate the error of this batch if you want to track/observe the error trend for viewing purpose.
-        ######### back propagation to calculate the gradients of all the weights
-        ######### use the gradients to update all the weight matrices. 
+        print("WIll check every 5000 iterations, and early stop if it hits below 3% (97% accuracy).")
+        print("Should only take about 10000 iterations.")
 
         for t in range(iterations):
+            # If using SGD, sample a minibatch; otherwise use the full dataset.
+            if SGD:
+                d_prime = np.random.choice(X.shape[0], mini_batch_size, replace=False)
+                X_batch = X[d_prime]
+                Y_batch = Y[d_prime]
+            else:
+                X_batch = X
+                Y_batch = Y
 
-            # D' = (X, Y) be N' samples randomly picked from D which is the training set
-            d_prime = np.random.choice(X.shape[0], mini_batch_size, replace=False)
-            X = X[d_prime]
-            Y = Y[d_prime]
-
-            #add the bias feature column to the X matrix that has been randomly selected
-            X_bias = np.ones((X.shape[0], 1))
-            X_tmp = np.hstack((X_bias,X))
-
-            for l in range (1, mini_batch_size):
-                d_prime[l].S = np.dot(X_tmp[l-1], d_prime[l].W)
-                d_prime[l].X = np.hstack((X_tmp, d_prime[l].act(d_prime[l].S)))
+             #add the bias feature column to the X matrix that has been randomly selected
+            X_bias = np.ones((X_batch.shape[0], 1))
+            X_tmp = np.hstack((X_bias, X_batch))
             
-            # E
-            e = np.sum((X_tmp[:,1:] - Y)**2) / mini_batch_size
+            # Adding the bias featue column for the first layer
+            self.layers[0].X = X_tmp
 
-            # Delta (L) = 2(X_tmp[:,1:] - Y) * act_de(s^(L))
-            delta_L = 2 * (X_tmp[:,1:] - Y) * d_prime[-1].act_de(d_prime[-1].S)
+            # Forward propagation: compute S and X for layers 1 to L.
+            for l in range(1, self.L+1):
+                current_layer = self.layers[l]
+                prev_layer = self.layers[l-1]
+                # S(l) = X(l-1) dot W(l)
+                current_layer.S = np.dot(prev_layer.X, current_layer.W)
+                # X(l) = [1, act(S(l))] where 1 is the bias node.
+                current_layer.X = np.concatenate((np.ones((current_layer.act(current_layer.S).shape[0], 1)), current_layer.act(current_layer.S)), axis=1)
+
+            # E = sum((X^(L) - Y)^2) / N'
+            e = np.sum((self.layers[self.L].X[:,1:] - Y_batch)**2) / X_batch.shape[0]
+
+            # Delta (L) 
+            delta = 2 * (self.layers[self.L].X[:, 1:] - Y_batch) * self.layers[self.L].act_de(self.layers[self.L].S)
+
+            # G(L) = X^(L-1) dot Delta(L)
+            gradients = [None] * (self.L + 1)
+            gradients[self.L] = np.einsum('ij,ik->jk', self.layers[self.L-1].X, delta) / X_batch.shape[0]
+
+
+            for l in range(self.L-1, 0, -1):
+
+                # Delta(l) = Delta(l+1) dot W(l+1) dot act'(S(l))
+                delta = np.dot(delta, self.layers[l+1].W[1:, :].T) * self.layers[l].act_de(self.layers[l].S)
+
+                # G(l) = X(l-1) dot Delta(l)
+                gradients[l] = np.einsum('ij,ik->jk', self.layers[l-1].X, delta) / X_batch.shape[0]
+
+            # Update weights
+            for l in range(1, self.L+1):
+                self.layers[l].W = self.layers[l].W - (eta * gradients[l])
+
+            if t % 5000 == 0:
+                err = self.error(X, Y)
+                print("Iteration %d, error: %.2f%%" % (t, err))
+
+                # Early stopping if error goes below 3%
+                if err < 3:
+                    print("Early stopping at iteration %d with error %.2f%%" % (t, err))
+                    break
+
         # pass
     
     
@@ -160,4 +190,3 @@ class NeuralNetwork:
         estimated = self.predict(X)
         actual = np.argmax(Y, axis=1)
         return np.sum(estimated != actual) / X.shape[0] * 100
- 
