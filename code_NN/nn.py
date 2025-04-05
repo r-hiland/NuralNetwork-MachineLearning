@@ -1,15 +1,3 @@
-# Place your EWU ID and Name here. 
-# EWU ID: whiland - name: Reed Hiland
-
-### Delete every `pass` statement below and add in your own code. 
-
-
-
-# Implementation of the forwardfeed neural network using stachastic gradient descent via backpropagation
-# Support parallel/batch mode: process every (mini)batch as a whole in one forward-feed/backtracking round trip. 
-
-
-
 from re import L
 from injector import T
 import numpy as np
@@ -54,12 +42,6 @@ class NeuralNetwork:
         ''' Initialize every layer's edge weights with random numbers from [-1/sqrt(d),1/sqrt(d)], 
             where d is the number of nonbias node of the layer
         '''
-
-        # Needs to be a matrix where every column is the wights, and every row is a node from the
-        # previous layer.
-
-        # Make matrix that size, then fill with random numbers limited be the sqrt above.
-
         # Need to skip the input layer, so start at 1
 
         for i in range(1, self.L+1):
@@ -125,10 +107,8 @@ class NeuralNetwork:
 
             for l in range(self.L-1, 0, -1):
 
-                # Delta(l) = Delta(l+1) dot W(l+1) dot act'(S(l))
                 delta = np.dot(delta, self.layers[l+1].W[1:, :].T) * self.layers[l].act_de(self.layers[l].S)
 
-                # G(l) = X(l-1) dot Delta(l)
                 gradients[l] = np.einsum('ij,ik->jk', self.layers[l-1].X, delta) / X_batch.shape[0]
 
             # Update weights
